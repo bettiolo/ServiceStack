@@ -58,8 +58,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 			if (!request.StatusCode.HasValue)
 				throw ex;
 
-			var httpStatus = (HttpStatusCode)request.StatusCode.Value;
-			throw new Common.Web.HttpError(httpStatus, ex);
+            var responseStatus = ResponseStatusTranslator.Instance.Parse(ex);
+			throw ServiceUtils.CreateErrorResponse(request, ex, responseStatus);
 		}
 	}
 

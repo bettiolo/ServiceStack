@@ -33,11 +33,11 @@ namespace ServiceStack.ServiceInterface
 			return errorResponse;
 		}
 
-		public static object CreateErrorResponse<TRequest>(TRequest request, Exception ex, ResponseStatus responseStatus)
+		public static HttpError CreateErrorResponse<TRequest>(TRequest request, Exception ex, ResponseStatus responseStatus)
 		{
 			var responseDto = CreateResponseDto(request, responseStatus);
 
-            var httpError = ex as IHttpError;
+            var httpError = ex as HttpError;
             if (httpError != null)
             {
                 if (responseDto != null)
@@ -70,7 +70,11 @@ namespace ServiceStack.ServiceInterface
 				errorMsg = responseStatus.Message ?? errorMsg;
 			}
 
-			return new HttpError(responseDto, statusCode, errorCode, errorMsg);
+		    HttpError innerHttpError = null;
+            if (ex.InnerException != null) {
+                innerHttpError = CreateErrorResponse(request, ex.InnerException, null);
+            }
+            return new HttpError(statusCode, errorMsg, errorCode, responseDto, innerHttpError);
 		}
 
 		/// <summary>

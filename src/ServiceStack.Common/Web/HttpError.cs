@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using ServiceStack.Common.Utils;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
@@ -9,42 +10,16 @@ namespace ServiceStack.Common.Web
 {
 	public class HttpError : Exception, IHttpError
 	{
-		public HttpError() : this(null) {}
 
-		public HttpError(string message)
-			: this(HttpStatusCode.InternalServerError, message) {}
-
-		public HttpError(HttpStatusCode statusCode, string errorCode)
-			: this(statusCode, errorCode, null) {}
-
-        public HttpError(object responseDto, HttpStatusCode statusCode, string errorCode, string errorMessage)
-            : this(statusCode, errorCode, errorMessage)
-        {
-            this.Response = responseDto;
-        }
-
-		public HttpError(HttpStatusCode statusCode, string errorCode, string errorMessage)
-			: base(errorMessage ?? errorCode)
+        public HttpError(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string errorMessage = null,
+            string errorCode = null, object responseDto = null, HttpError innerException = null)
+            : base(errorMessage ?? errorCode ?? statusCode.ToString(), innerException)
 		{
+            this.Response = responseDto;
 			this.ErrorCode = errorCode;
 			this.StatusCode = statusCode;
 			this.Headers = new Dictionary<string, string>();
             this.StatusDescription = errorCode;
-		}
-
-		public HttpError(HttpStatusCode statusCode, Exception innerException)
-			: this(innerException.Message, innerException)
-		{
-			this.StatusCode = statusCode;
-		}
-
-		public HttpError(string message, Exception innerException) : base(message, innerException)
-		{
-			if (innerException != null)
-			{
-				this.ErrorCode = innerException.GetType().Name;
-			}
-			this.Headers = new Dictionary<string, string>();			
 		}
 
 		public string ErrorCode { get; set; }
@@ -101,5 +76,6 @@ namespace ServiceStack.Common.Web
         {
             return new HttpError(HttpStatusCode.Conflict, message);
         }
+
     }
 }
